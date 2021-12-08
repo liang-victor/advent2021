@@ -14,16 +14,18 @@ defmodule Day01 do
   end
 
   def example_data() do
-    [199,
-    200,
-    208,
-    210,
-    200,
-    207,
-    240,
-    269,
-    260,
-    263]
+    [
+      199,
+      200,
+      208,
+      210,
+      200,
+      207,
+      240,
+      269,
+      260,
+      263
+  ]
 
   end
 
@@ -40,7 +42,7 @@ defmodule Day01 do
 
   end
 
-  def solve_part_2(data) do
+  def count_sliding_increases(data) do
     data
     |> Enum.chunk_every(3, 1)
     |> Enum.map(&Enum.sum/1)
@@ -52,4 +54,4 @@ end
 
 Day01.load_data() |> Day01.count_increases() |> IO.inspect(label: "part 1 answer")
 
-Day01.load_data() |> Day01.solve_part_2() |> IO.inspect(label: "part 2 answer")
+Day01.load_data() |> Day01.count_sliding_increases() |> IO.inspect(label: "part 2 answer")
