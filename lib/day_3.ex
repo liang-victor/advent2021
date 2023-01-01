@@ -222,51 +222,81 @@ defmodule Day3Part2 do
   def calculate_oxygen_generator_rating(data) do
     processed = data |> Day3.process()
 
-    matching_index =
-      data
-      |> Day3.calculate_most_common_bits()
-      |> IO.inspect(label: "most common bits")
-      |> Enum.reduce_while(
-        processed |> Enum.with_index(),
-        &reduce_to_matching_index/2
-      )
-      |> Enum.map(fn {_, index} -> index end)
-      |> Enum.at(0)
+    number_of_digits = processed |> Enum.at(0) |> length()
 
-    _oxygen_generator_rating =
+    starting_accumulator =
       processed
-      |> Enum.at(matching_index)
-      |> Day3.convert_to_integer()
+      |> List.duplicate(2)
+      |> Enum.zip()
+
+    0..number_of_digits
+    |> Enum.reduce_while(starting_accumulator, fn _x, acc ->
+      if length(acc) > 1 do
+        {:cont, filter_most_common_first_value(acc, &most_common_value/2)}
+      else
+        {:halt, acc}
+      end
+    end)
+    |> List.first()
+    |> then(fn {_, result} -> result end)
+    |> Day3.convert_to_integer()
+  end
+
+  defp filter_most_common_first_value(paired_values, criteria_function) do
+    paired_values =
+      paired_values
+      |> Enum.map(fn {working, original} ->
+        {working |> Enum.split(1), original}
+      end)
+
+    sum_of_digit =
+      paired_values
+      |> Enum.map(fn {{[first], _rest}, _original} -> first end)
+      |> Enum.sum()
+
+    criteria = criteria_function.(sum_of_digit, length(paired_values))
+
+    paired_values
+    |> Enum.filter(fn {{first, _rest}, _original} -> first == [criteria] end)
+    |> Enum.map(fn {{_first, rest}, original} -> {rest, original} end)
+  end
+
+  defp most_common_value(sum_of_digit, length) do
+    if sum_of_digit >= length / 2 do
+      1
+    else
+      0
+    end
+  end
+
+  defp least_common_value(sum_of_digit, length) do
+    if sum_of_digit >= length / 2 do
+      0
+    else
+      1
+    end
   end
 
   def calculate_carbon_dioxide_scrubber_rating(data) do
     processed = data |> Day3.process()
 
-    matching_index =
-      data
-      |> Day3.calculate_least_common_bits()
-      |> Enum.reduce_while(
-        processed |> Enum.with_index(),
-        &reduce_to_matching_index/2
-      )
-      |> Enum.map(fn {_, index} -> index end)
-      |> Enum.at(0)
+    number_of_digits = processed |> Enum.at(0) |> length()
 
-    _carbon_dioxide_rating =
+    starting_accumulator =
       processed
-      |> Enum.at(matching_index)
-      |> Day3.convert_to_integer()
-  end
+      |> List.duplicate(2)
+      |> Enum.zip()
 
-  defp reduce_to_matching_index(x, acc) do
-    if length(acc) > 1 do
-      {:cont,
-       acc
-       |> Enum.filter(fn {binary, _index} -> List.first(binary) == x end)
-       |> Enum.map(fn {[_first | rest], index} -> {rest, index} end)}
-      |> IO.inspect()
-    else
-      {:halt, acc}
-    end
+    0..number_of_digits
+    |> Enum.reduce_while(starting_accumulator, fn _x, acc ->
+      if length(acc) > 1 do
+        {:cont, filter_most_common_first_value(acc, &least_common_value/2)}
+      else
+        {:halt, acc}
+      end
+    end)
+    |> List.first()
+    |> then(fn {_, result} -> result end)
+    |> Day3.convert_to_integer()
   end
 end
